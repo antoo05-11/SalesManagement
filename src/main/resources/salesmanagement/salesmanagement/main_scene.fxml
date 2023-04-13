@@ -10,6 +10,7 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.ProgressIndicator?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.SplitPane?>
@@ -383,12 +384,12 @@
                                              <children>
                                                 <VBox layoutX="176.0" layoutY="14.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="58.0" prefWidth="240.0">
                                                    <children>
-                                                      <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Customer Number:">
+                                                      <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Customer Name">
                                                          <font>
                                                             <Font size="14.0" />
                                                          </font>
                                                       </Text>
-                                                      <JFXTextField fx:id="customerNumberInput" prefHeight="26.0" prefWidth="240.0" />
+                                                      <JFXTextField fx:id="customerNameInput" prefHeight="26.0" prefWidth="240.0" />
                                                    </children>
                                                 </VBox>
                                                 <JFXButton fx:id="submitOrderButton" layoutX="394.0" layoutY="486.0" onAction="#createOrder" prefHeight="65.0" prefWidth="215.0" text="Create Order" />
@@ -401,7 +402,6 @@
                                                    </font>
                                                 </Text>
                                                 <DatePicker fx:id="shippedDateInput" layoutX="595.0" layoutY="314.0" prefHeight="26.0" prefWidth="154.0" promptText="Shipped Date" />
-                                                <JFXTextField fx:id="productCodeInput" layoutX="176.0" layoutY="87.0" promptText="Product Code" />
                                                 <JFXTextField fx:id="quantityInput" layoutX="326.0" layoutY="88.0" prefHeight="26.0" prefWidth="85.0" promptText="Quantity" />
                                                 <JFXButton fx:id="addButton" layoutX="598.0" layoutY="88.0" onAction="#addItem" text="Add/Update" />
                                                 <JFXButton fx:id="removeButton" layoutX="690.0" layoutY="88.0" onAction="#removeItems" text="Remove" />
@@ -415,6 +415,22 @@
                                                       <TableColumn fx:id="totalOD" prefWidth="118.69091796875" text="Total" />
                                                    </columns>
                                                 </TableView>
+                                                <VBox layoutX="176.0" layoutY="87.0" prefHeight="148.0" prefWidth="141.0">
+                                                   <children>
+                                                      <JFXTextField fx:id="productCodeInput" promptText="Product Code" />
+                                                      <ListView fx:id="suggestionList" prefHeight="201.0" prefWidth="120.0" visible="false" />
+                                                   </children>
+                                                </VBox>
+                                                <VBox layoutX="456.0" layoutY="14.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="58.0" prefWidth="164.0">
+                                                   <children>
+                                                      <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Phone Number">
+                                                         <font>
+                                                            <Font size="14.0" />
+                                                         </font>
+                                                      </Text>
+                                                      <JFXTextField fx:id="phoneNumberInput" prefHeight="26.0" prefWidth="168.0" />
+                                                   </children>
+                                                </VBox>
                                              </children>
                                           </AnchorPane>
                                        </content>
@@ -481,8 +497,8 @@
                                                             <Font size="14.0" />
                                                          </font>
                                                       </Text>
-                                                      <JFXTextField fx:id="MSRPPDetails" layoutX="382.0" layoutY="251.0" prefWidth="195.0" />
-                                                      <Text layoutX="382.0" layoutY="246.0" strokeType="OUTSIDE" strokeWidth="0.0" text="MSRP">
+                                                      <JFXTextField fx:id="sellPricePDetails" layoutX="382.0" layoutY="251.0" prefWidth="195.0" />
+                                                      <Text layoutX="382.0" layoutY="246.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Sell Price">
                                                          <font>
                                                             <Font size="14.0" />
                                                          </font>
