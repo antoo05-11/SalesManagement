@@ -1,19 +1,29 @@
 package salesmanagement.salesmanagement;
 
+import javafx.animation.AnimationTimer;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
+import javafx.application.Platform;
+import javafx.beans.property.BooleanProperty;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
+import javafx.scene.control.SplitPane;
 import javafx.scene.image.Image;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import javafx.util.Duration;
 import salesmanagement.salesmanagement.scenecontrollers.LoginSceneController;
 import salesmanagement.salesmanagement.scenecontrollers.MainSceneController;
 import salesmanagement.salesmanagement.scenecontrollers.SceneController;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.Objects;
+
+import static salesmanagement.salesmanagement.scenecontrollers.SceneController.runTask;
 
 /**
  * @since 1.0
@@ -38,7 +48,7 @@ public class AppController {
         return appController;
     }
 
-    private final String url = "jdbc:mysql://b7kidpocyxjnjhwdw73i-mysql.services.clever-cloud.com:3306/b7kidpocyxjnjhwdw73i";
+    private final String url = "jdbc:mysql://b7kidpocyxjnjhwdw73i-mysql.services.clever-cloud.com:3306/b7kidpocyxjnjhwdw73i?autoReconnect=true&useSSL=false&autoReconnectForPools=true&connectTimeout=30000&socketTimeout=30000";
     private final String user = "udomuzbs3hfulslz";
     private final String password = "lbfj2nEwsHTelFcZAqLU";
 
@@ -67,6 +77,7 @@ public class AppController {
 
         ((AnchorPane) mainScene.getRoot()).setPrefWidth(Screen.getPrimary().getVisualBounds().getWidth());
         ((AnchorPane) mainScene.getRoot()).setPrefHeight(Screen.getPrimary().getVisualBounds().getHeight());
+        ((SplitPane) ((AnchorPane) mainScene.getRoot()).getChildren().get(0)).setPrefSize(Screen.getPrimary().getVisualBounds().getWidth(), Screen.getPrimary().getVisualBounds().getHeight());
 
         //Set up stage config.
 
@@ -78,16 +89,23 @@ public class AppController {
         stage.show();
 
         // Set up SQL Connection for scene controllers.
-        SceneController.runTask(() -> {
-            sqlConnection = new SQLConnection();
-            sqlConnection.logInSQLServer(url, user, password);
+        runTask(() -> {
+            sqlConnection = new SQLConnection(url, user, password);
+            sqlConnection.connectServer();
             loginSceneController.setSqlConnection(sqlConnection, stage);
             mainSceneController.setSqlConnection(sqlConnection, stage);
         }, null, loginSceneController.getProgressIndicator(), loginSceneController.getLoginPane());
-
-        // Login event.
         mainSceneController.loginDataListener.start();
-
+        AnimationTimer notifyInternetConnection = new AnimationTimer() {
+            @Override
+            public void handle(long l) {
+                if(sqlConnection.isReconnecting()){
+                    sqlConnection.setReconnecting(false);
+                    Platform.runLater(() -> NotificationSystem.throwNotification(NotificationCode.NETWORK_ERROR, stage));
+                }
+            }
+        };
+        notifyInternetConnection.start();
         // Create timer to update the date/time every frame.
        /* AnimationTimer timer = new AnimationTimer() {
             @Override

@@ -28,7 +28,7 @@ public class NotificationSystem {
                 .title(title)
                 .text(content)
                 .owner(stage)
-                .position(Pos.TOP_CENTER).hideAfter(Duration.seconds(1));
+                .position(Pos.TOP_CENTER).hideAfter(Duration.seconds(2));
         notificationBuilder.show();
     }
 }

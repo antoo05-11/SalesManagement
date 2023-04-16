@@ -4,20 +4,25 @@
     -fx-background-size: cover;
     -fx-background-position: center center;
 }
-.split-pane:horizontal > .split-pane-divider {
-    
-    -fx-padding: 0 0.75 0 0.75;  
- }
- .split-pane:vertical > .split-pane-divider {
-    -fx-background-color: transparent;
-    -fx-padding: 0 0 0 0;  
- }
 
- .button {
+.split-pane:horizontal > .split-pane-divider {
+    -fx-padding: 0 0.75 0 0.75;
+}
+
+.split-pane:vertical > .split-pane-divider {
+    -fx-background-color: transparent;
+    -fx-padding: 0 0 0 0;
+}
+
+.split-pane-1:vertical > .split-pane-divider {
+    -fx-padding: 0 0.75 0 0.75;
+}
+
+.button {
     -fx-border-radius: 10px;
     -fx-background-radious: 10px;
- }
- 
+}
+
 
 .content-notification-text-area {
     -fx-text-alignment: justify;
@@ -29,8 +34,9 @@
     -fx-border-radius: 0;
     -fx-border-width: 0 0 0 4;
     -fx-border-color: rgba(0, 0, 0, 0);
-    -fx-background-color :#ffffff;
+    -fx-background-color: #ffffff;
 }
+
 @font-face {
     font-family: 'SVN-Poppins';
     src: url('/salesmanagement/salesmanagement/SVN-Poppins.ttf');
@@ -40,24 +46,32 @@
 .text-field-box {
     -fx-padding: 4 0 4 10;
     -fx-background-color: white;
-    -fx-border-color:  #d1d1d1;
+    -fx-border-color: #d1d1d1;
     -fx-border-width: 1.5px;
     -fx-border-radius: 3px;
     -jfx-unfocus-color: transparent;
     -jfx-focus-color: transparent;
 
 }
+
 .text-field-box:focused {
     -fx-border-color: #007acc;
 }
 
 .combo-box-style {
-    -jfx-unfocus-color: transparent;
-    -fx-border-insets:  4 0 -2 0;
-    -fx-border-color: #d1d1d1;
-    -fx-border-radius: 3;
-    -fx-font-size: 15;
+    /*-jfx-unfocus-color: transparent;*/
+    /*-fx-border-insets: 4 0 -2 0;*/
+    /*-fx-border-color: #d1d1d1;*/
+    /*-fx-border-radius: 3;*/
+    /*-fx-font-size: 15;*/
 }
 
+.text-style {
+    -fx-fill: black;
+    -fx-font-size: 15;
+    -fx-font-family: SVN-Poppins;
+}
 
-
+.text-style:hover {
+    -fx-fill: #329cfe;
+}

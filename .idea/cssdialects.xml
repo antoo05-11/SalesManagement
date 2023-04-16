@@ -3,6 +3,7 @@
   <component name="CssDialectMappings">
     <file url="file://$PROJECT_DIR$/src/main/resources/salesmanagement/salesmanagement/button_style.css" dialect="CLASSIC" />
     <file url="file://$PROJECT_DIR$/src/main/resources/salesmanagement/salesmanagement/html_editor_style.css" dialect="JavaFX" />
+    <file url="file://$PROJECT_DIR$/src/main/resources/salesmanagement/salesmanagement/login.css" dialect="JavaFX" />
     <file url="file://$PROJECT_DIR$/src/main/resources/salesmanagement/salesmanagement/tabpane_style.css" dialect="JavaFX" />
   </component>
 </project>

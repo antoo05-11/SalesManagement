@@ -2,16 +2,29 @@ package salesmanagement.salesmanagement.scenecontrollers;
 
 import com.jfoenix.controls.JFXPasswordField;
 import com.jfoenix.controls.JFXTextField;
+import javafx.animation.Animation;
+import javafx.animation.AnimationTimer;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.concurrent.Task;
 import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.Node;
+import javafx.scene.control.Label;
+import javafx.scene.control.Pagination;
+import javafx.scene.control.SplitPane;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.text.Font;
+import javafx.util.Duration;
+import salesmanagement.salesmanagement.ImageController;
 import salesmanagement.salesmanagement.NotificationCode;
 import salesmanagement.salesmanagement.NotificationSystem;
 
@@ -19,6 +32,7 @@ import java.net.URL;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ResourceBundle;
+import java.util.Stack;
 
 public class LoginSceneController extends SceneController implements Initializable {
     @FXML
@@ -28,7 +42,8 @@ public class LoginSceneController extends SceneController implements Initializab
 
     @FXML
     private VBox loginPane;
-
+    @FXML
+    private Pagination pagination;
     @FXML
     private StackPane loginRoot;
 
@@ -88,11 +103,29 @@ public class LoginSceneController extends SceneController implements Initializab
         super.hideProgressIndicator(loginPane);
     }
 
+    ImageView[] imageViews = new ImageView[5];
+    Timeline autoPaging = new Timeline(new KeyFrame(Duration.seconds(2), event -> {
+        int nextPage = (pagination.getCurrentPageIndex() + 1) % pagination.getPageCount();
+        pagination.setCurrentPageIndex(nextPage);
+    }));
+
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        Rectangle rect = new Rectangle(loginRoot.getPrefWidth(),loginRoot.getPrefHeight());
+        Rectangle rect = new Rectangle(loginRoot.getPrefWidth(), loginRoot.getPrefHeight());
         rect.setArcHeight(15.0);
         rect.setArcWidth(15.0);
         loginRoot.setClip(rect);
+
+        for (int i = 0; i < 5; i++) {
+            imageViews[i] = new ImageView(ImageController.getImage("app_intro/app_intro_" + (i + 1) + ".png"));
+            imageViews[i].setFitWidth(pagination.getPrefWidth());
+            imageViews[i].setFitHeight(pagination.getPrefHeight() - 50);
+        }
+        pagination.setPageFactory((pageIndex) -> imageViews[pageIndex]);
+
+
+
+        autoPaging.setCycleCount(Timeline.INDEFINITE);
+        autoPaging.play();
     }
 }

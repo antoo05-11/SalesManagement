@@ -1,8 +1,10 @@
 package salesmanagement.salesmanagement.scenecontrollers;
 
-import com.jfoenix.controls.JFXButton;
-import com.jfoenix.controls.JFXComboBox;
-import com.jfoenix.controls.JFXTextField;
+import com.google.i18n.phonenumbers.PhoneNumberUtil;
+import com.jfoenix.controls.*;
+import javafx.beans.binding.Bindings;
+import javafx.beans.binding.StringBinding;
+import javafx.embed.swing.SwingFXUtils;
 import javafx.animation.AnimationTimer;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleDoubleProperty;
@@ -12,9 +14,12 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.Event;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
+import javafx.scene.chart.BarChart;
+import javafx.scene.chart.XYChart;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
@@ -22,6 +27,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
@@ -38,7 +44,10 @@ import salesmanagement.salesmanagement.ImageController;
 import salesmanagement.salesmanagement.SalesComponent.Employee;
 import salesmanagement.salesmanagement.SalesComponent.Order;
 
+import javax.imageio.ImageIO;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -46,7 +55,15 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+
 import java.util.List;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+
+import com.google.i18n.phonenumbers.Phonenumber;
+
 
 public class MainSceneController extends SceneController {
     @FXML
@@ -108,46 +125,31 @@ public class MainSceneController extends SceneController {
         tabPane.getSelectionModel().select(settingTab);
     }
 
-    @FXML
-    Text author;
-    @FXML
-    Text notificationTitle;
-    @FXML
-    Text publishedDate;
-    @FXML
-    Text content;
-    @FXML
-    HBox contentBox;
-
-    private void uploadNotificationText() {
-        runTask(() -> {
-            String query = "SELECT * FROM notifications  " +
-                    "WHERE notificationID = (SELECT MAX(notificationID) " +
-                    "FROM notifications)";
-            ResultSet resultSet = sqlConnection.getDataQuery(query);
-            try {
-                if (resultSet.next()) {
-                    content.setWrappingWidth(contentBox.getWidth() * 0.9);
-                    content.setText(resultSet.getString("content"));
-                    notificationTitle.setText(resultSet.getString("title"));
-                    int authorID = Integer.parseInt(resultSet.getString("employeeNumber"));
-                    Employee employee = new Employee(authorID);
-                    author.setText("\t\tPosted by " + employee.getFullName() + ".");
-                    publishedDate.setText("\t\tPublished " + resultSet.getString("publishedDate") + ".");
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }, null, progressIndicator, homeTab.getTabPane());
-
+    public Node getMainScenePane() {
+        return secondSplitPane;
     }
 
+    //region DashBoard Tab
     @FXML
-    ImageView statusIcon;
+    Tab dashBoardTab;
+    @FXML
+    private BarChart barChart;
 
-    /**
-     * Handle EMPLOYEES tab.
-     */
+    @FXML
+    public void displayDashBoardTab() {
+        XYChart.Series dataSeries1 = new XYChart.Series();
+        dataSeries1.setName("Popular programming languages rated by GitHub");
+
+        dataSeries1.getData().add(new XYChart.Data("JavaScript", 2300));
+        dataSeries1.getData().add(new XYChart.Data("Python", 1000));
+        dataSeries1.getData().add(new XYChart.Data("Java", 986));
+        dataSeries1.getData().add(new XYChart.Data("Ruby", 870));
+        dataSeries1.getData().add(new XYChart.Data("C++", 413));
+        dataSeries1.getData().add(new XYChart.Data("C#", 326));
+        barChart.getData().add(dataSeries1);    }
+    //endregion
+
+    //region Employees Tab: list employees, employee's info: details, order, operations.
     @FXML
     TableView<Employee> employeeTable;
     @FXML
@@ -173,14 +175,19 @@ public class MainSceneController extends SceneController {
         employeeTable.setSelectionModel(null);
         ArrayList<Employee> employees = new ArrayList<>();
         runTask(() -> {
+            ResultSet resultSet = null;
             String query = "SELECT * FROM employees";
+            resultSet = sqlConnection.getDataQuery(query);
+//            while (resultSet == null) {
+//                System.out.println("reconnect...");
+//                sqlConnection.connectServer();
+//                resultSet = sqlConnection.getDataQuery(query);
+//            }
             try {
-                ResultSet resultSet = sqlConnection.getDataQuery(query);
                 while (resultSet.next()) {
                     employees.add(new Employee(resultSet, MainSceneController.this));
                 }
-            } catch (SQLException e) {
-                e.printStackTrace();
+            } catch (SQLException ignored) {
             }
         }, () -> {
             ObservableList<Employee> employeeList = FXCollections.observableArrayList(employees);
@@ -191,13 +198,15 @@ public class MainSceneController extends SceneController {
 
     @FXML
     VBox employeeInfoBox;
+    @FXML
+    VBox detailsInfoBox;
 
     /**
      * When click on Name Text in Employee table, this function will be called to
      * display detail information of employee. It's called by an Employee object.
      * It hides employees table box and shows employee information box.
      */
-    public void displayEmployeeInfoBox() {
+    public void displayEmployeeInfoBox(Employee employee) {
         employeeInfoBox.toFront();
         employeeInfoBox.setVisible(true);
         employeeInfoBox.setDisable(false);
@@ -205,12 +214,35 @@ public class MainSceneController extends SceneController {
         employeeTableBox.toBack();
         employeeTableBox.setVisible(false);
         employeeTableBox.setDisable(true);
+        fullNameLabel.setText(employee.getFullName());
+        avatar.setImage(employee.getAvatar().getImage());
+        lastNameTextField.setText(employee.getLastName());
+        firstNameTextField.setText(employee.getFirstName());
+        usernameTextField.setText(employee.getUsername());
+        passwordField.setText(employee.getPassword());
+        birthDatePicker.setValue(employee.getBirthDate());
+        emailTextField.setText(employee.getEmail());
+        phoneCodeBox.setValue(employee.getPhoneCode());
+        joiningDatePicker.setValue(employee.getJoiningDate());
+        lastWorkingDatePicker.setValue(employee.getLastWorkingDate());
+        phoneNumberTextField.setText(employee.getPhone());
+        statusBox.setValue(employee.getStatus().getText());
+        accessibilityBox.setValue(employee.getJobTitle());
+        if (Objects.equals(employee.getGender(), "male")) maleRadioButton.setSelected(true);
+        else if (Objects.equals(employee.getGender(), "female")) femaleRadioButton.setSelected(false);
+    }
+    @FXML
+
+    TableView orders_employeeTable;
+    @FXML
+    public void chooseOrders_employeeTable() {
+
     }
 
     /**
      * Called when clicking "BACK" button, return to employees list.
      * It shows employees table box and hides employee information box.
-     * It relates to {@link  #displayEmployeeInfoBox()};
+     * It relates to {@link  #displayEmployeeInfoBox(Employee)};
      */
     @FXML
     void goBackToEmployeeTableBox() {
@@ -221,26 +253,69 @@ public class MainSceneController extends SceneController {
         employeeTableBox.toFront();
         employeeTableBox.setVisible(true);
         employeeTableBox.setDisable(false);
+
+        maleRadioButton.setSelected(false);
+        femaleRadioButton.setSelected(false);
     }
 
     @FXML
     void uploadAvatar() {
-
-    }
-
-    @FXML
-    void uploadImageNews(MouseEvent event) {
         FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Choose News Image");
+        fileChooser.setTitle("Choose Avatar Image");
         fileChooser.getExtensionFilters().addAll(
                 new FileChooser.ExtensionFilter("Image", "*.png", "*.jpg", "*.gif")
         );
         File selectedFile = fileChooser.showOpenDialog(stage);
         if (selectedFile != null) {
-            ((ImageView) event.getSource()).setImage(new Image(selectedFile.toURI().toString()));
+            avatar.setImage(new Image(selectedFile.toURI().toString()));
+            avatarAddress.setDisable(false);
+            avatarAddress.setText(selectedFile.getAbsolutePath());
+            avatarAddress.setDisable(true);
         }
     }
 
+    @FXML
+    ImageView avatar;
+    @FXML
+    Label fullNameLabel;
+    @FXML
+    JFXTextField lastNameTextField;
+    @FXML
+    JFXTextField firstNameTextField;
+    @FXML
+    DatePicker birthDatePicker;
+    @FXML
+    JFXRadioButton maleRadioButton;
+    @FXML
+    JFXRadioButton femaleRadioButton;
+    @FXML
+    JFXTextField avatarAddress;
+    @FXML
+    JFXComboBox<String> statusBox;
+    @FXML
+    JFXTextField emailTextField;
+    @FXML
+    JFXButton verifyButton;
+    @FXML
+    JFXComboBox<String> phoneCodeBox;
+    @FXML
+    JFXTextField phoneNumberTextField;
+    @FXML
+    JFXTextField usernameTextField;
+    @FXML
+    JFXPasswordField passwordField;
+    @FXML
+    JFXTextField employeeCodeTextField;
+    @FXML
+    JFXComboBox<String> accessibilityBox;
+    @FXML
+    JFXTextField supervisorTextField;
+    @FXML
+    DatePicker joiningDatePicker;
+    @FXML
+    DatePicker lastWorkingDatePicker;
+
+    //endregion
     @FXML
     SplitPane firstSplitPane;
     @FXML
@@ -260,30 +335,124 @@ public class MainSceneController extends SceneController {
         newsTabButton.fire();
     }
 
-    enum tab {
-        newsTab,
-        employeesTab,
-        settingsTab,
-        ordersTab,
-        productsTab
+    @Override
+    protected void maximumStage(MouseEvent mouseEvent) {
+
     }
 
     @FXML
-    ScrollPane scrollpane;
-    @FXML
     StackPane menuPane;
 
+    //region News Tab: display news, post news.
     @FXML
-    WebView webView;
-    @FXML
-    VBox rightNewsBox;
-    @FXML
-    HBox newsdetail;
+    WebView webPreview;
     @FXML
     HTMLEditor htmlEditor;
-
-
+    String htmlText;
     MenuButton insertMenuButton;
+    @FXML
+    VBox newsPreviewBox;
+    @FXML
+    VBox newsCreatingBox;
+    @FXML
+    JFXTextField newsTitle;
+    @FXML
+    ImageView newsImageInserted;
+    @FXML
+    WebView newsDisplayedView;
+    @FXML
+    VBox newsPiecesBox;
+    String mainContent = "";
+
+    @FXML
+    void goToCreateNews() {
+        thirdSplitPane.setVisible(false);
+        thirdSplitPane.setDisable(true);
+        newsCreatingBox.setVisible(true);
+        newsCreatingBox.setDisable(false);
+    }
+
+    @FXML
+    public void previewNews() {
+        newsPreviewBox.setVisible(true);
+        newsPreviewBox.setDisable(false);
+        newsCreatingBox.setVisible(false);
+        htmlText = htmlEditor.getHtmlText();
+        htmlText = htmlText.replace("<body contenteditable=\"true\">", "<body style='background : rgba(0,0,0,0);' contenteditable=\"false\";> " + "<h1 style=\"text-align:center; font-size:30px; font-weight:bold;\">" + newsTitle.getText() + "</h1>\n");
+        webPreview.setPageFill(Color.TRANSPARENT);
+        webPreview.getEngine().loadContent(htmlText);
+    }
+
+    @FXML
+    public void backToNewsCreatingBox() {
+        newsPreviewBox.setVisible(false);
+        newsPreviewBox.setDisable(true);
+        newsCreatingBox.setVisible(true);
+    }
+
+    @FXML
+    public void postNews() throws SQLException {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        try {
+            ImageIO.write(SwingFXUtils.fromFXImage(newsImageInserted.getImage(), null), "png", outputStream);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        byte[] imageBytes = outputStream.toByteArray();
+        String postNewsQuery = "insert into notifications(employeeNumber, title, content, newsImage) values (?,?,?,?)";
+        PreparedStatement statement = sqlConnection.getConnection().prepareStatement(postNewsQuery);
+        statement.setInt(1, user.getEmployeeNumber());
+        statement.setString(2, newsTitle.getText());
+        statement.setString(3, htmlText);
+        statement.setBytes(4, imageBytes);
+        statement.executeUpdate();
+
+        thirdSplitPane.setVisible(true);
+        thirdSplitPane.setDisable(false);
+        newsCreatingBox.setVisible(false);
+        newsCreatingBox.setDisable(true);
+    }
+
+    private void uploadNotificationText() {
+        runTask(() -> {
+            String query = "SELECT * FROM notifications ORDER BY notifications.notificationID DESC LIMIT 6;";
+            ResultSet resultSet = sqlConnection.getDataQuery(query);
+            try {
+                if (resultSet.next()) {
+                    mainContent = resultSet.getString("content");
+                }
+                Platform.runLater(() -> {
+                    newsDisplayedView.getEngine().loadContent(mainContent);
+                });
+                int newsPieceCount = 0;
+                while (resultSet.next()) {
+                    HBox newsPiece = ((HBox) newsPiecesBox.getChildren().get(newsPieceCount));
+                    ((Text) newsPiece.getChildren().get(1)).setText(resultSet.getString("title"));
+                    InputStream is = resultSet.getBinaryStream("newsImage");
+                    Image image = new Image(is);
+                    ((ImageView) newsPiece.getChildren().get(0)).setImage(image);
+                    newsPieceCount++;
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }, null, (Pane) thirdSplitPane.getItems().get(0));
+
+    }
+
+    @FXML
+    void uploadImageNews(MouseEvent event) {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Choose News Image");
+        fileChooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("Image", "*.png", "*.jpg", "*.gif")
+        );
+        File selectedFile = fileChooser.showOpenDialog(stage);
+        if (selectedFile != null) {
+            ((ImageView) event.getSource()).setImage(new Image(selectedFile.toURI().toString()));
+        }
+    }
+    //endregion
 
     public void initialSetup() {
         // Load current UI.
@@ -292,14 +461,14 @@ public class MainSceneController extends SceneController {
 
         firstSplitPane.setMaxHeight(Screen.getPrimary().getVisualBounds().getHeight());
         ((StackPane) firstSplitPane.getItems().get(0)).setMinHeight(0.06 * Screen.getPrimary().getVisualBounds().getHeight());
-        ((AnchorPane) firstSplitPane.getItems().get(1)).setMinHeight(0.94 * Screen.getPrimary().getVisualBounds().getHeight());
+        ((SplitPane) firstSplitPane.getItems().get(1)).setMinHeight(0.94 * Screen.getPrimary().getVisualBounds().getHeight());
         secondSplitPane.setMaxWidth(Screen.getPrimary().getVisualBounds().getWidth());
         ((AnchorPane) secondSplitPane.getItems().get(0)).setMinWidth(0.1667 * Screen.getPrimary().getVisualBounds().getWidth());
-        ((AnchorPane) secondSplitPane.getItems().get(1)).setMinWidth(0.8333 * Screen.getPrimary().getVisualBounds().getWidth());
-        thirdSplitPane.setMaxWidth(0.8333 * Screen.getPrimary().getVisualBounds().getWidth());
-        ((VBox) thirdSplitPane.getItems().get(0)).setMinWidth(0.75 * thirdSplitPane.getMaxWidth());
-        ((VBox) thirdSplitPane.getItems().get(1)).setMinWidth(0.25 * thirdSplitPane.getMaxWidth());
+        ((TabPane) secondSplitPane.getItems().get(1)).setMinWidth(0.8333 * Screen.getPrimary().getVisualBounds().getWidth());
 
+        thirdSplitPane.setMaxWidth(0.8333 * Screen.getPrimary().getVisualBounds().getWidth());
+        ((Pane) thirdSplitPane.getItems().get(0)).setMinWidth(0.75 * thirdSplitPane.getMaxWidth());
+        ((Pane) thirdSplitPane.getItems().get(1)).setMinWidth(0.25 * thirdSplitPane.getMaxWidth());
         Insets hboxMargin = new Insets(0, 0.8333 * Screen.getPrimary().getVisualBounds().getWidth(), 0, 0);
         StackPane.setMargin(appName, hboxMargin);
 
@@ -318,23 +487,23 @@ public class MainSceneController extends SceneController {
         clip.setCenterY(35);
         smallAvatar.setClip(clip);
 
-        //employeeForm = new EmployeeForm(employeeInfoBoxContainer);
-        //employeeForm.closeForm(() -> employeeInfoBoxContainer.setMouseTransparent(true));
-
         currentTabButton = newsTabButton;
         goToNewsTab();
 
-        //TODO: test area
         insertMenuButton = new MenuButton("Insert...");
         ToolBar bar = null;
         Node node = htmlEditor.lookup(".top-toolbar");
         if (node instanceof ToolBar) {
             bar = (ToolBar) node;
         }
-        System.out.println(bar.getItems().get(4).getClass());
         if (bar != null) {
             bar.getItems().add(insertMenuButton);
         }
+
+        webPreview.setPageFill(Color.TRANSPARENT);
+        newsDisplayedView.setPageFill(Color.TRANSPARENT);
+
+        //TODO: test area
 
         // Load UI for others.
         runTask(() -> {
@@ -360,7 +529,23 @@ public class MainSceneController extends SceneController {
             employeeStatusColumn.setCellValueFactory(new PropertyValueFactory<>("status"));
             actionColumn.setCellValueFactory(new PropertyValueFactory<>("action"));
 
-            // Prepare for
+            // Employees Tab Preparation.
+            List<String> phoneCodes = new ArrayList<>();
+            PhoneNumberUtil phoneUtil = PhoneNumberUtil.getInstance();
+            for (String regionCode : phoneUtil.getSupportedRegions()) {
+                Phonenumber.PhoneNumber exampleNumber = phoneUtil.getExampleNumber(regionCode);
+                if (exampleNumber != null) {
+                    int countryCode = exampleNumber.getCountryCode();
+                    phoneCodes.add(String.format("+%d (%s)", countryCode, phoneUtil.getRegionCodeForCountryCode(countryCode)));
+                }
+            }
+            phoneCodeBox.getItems().addAll(phoneCodes);
+
+            List<String> accessibilitiesList = new ArrayList<>(Arrays.asList("HR", "Manager", "Employee", "Admin"));
+            accessibilityBox.getItems().addAll(accessibilitiesList);
+
+            List<String> statusList = new ArrayList<>(Arrays.asList("ACTIVE", "INACTIVE"));
+            statusBox.getItems().addAll(statusList);
         }, null, null, null);
     }
 
@@ -618,6 +803,11 @@ public class MainSceneController extends SceneController {
     JFXTextField commentsInput;
     @FXML
     JFXButton submitOrderButton;
+    @FXML
+    JFXTextField customerNameInput;
+    @FXML
+    JFXTextField phoneNumberInput;
+
 
     public void createOrder() {
         runTask(() -> {
@@ -827,7 +1017,6 @@ public class MainSceneController extends SceneController {
                 ex.printStackTrace();
             }
         }, null, progressIndicator, ordersTab.getTabPane());
-
     }
 
     public void handleRemoveOrder() {
@@ -961,12 +1150,7 @@ public class MainSceneController extends SceneController {
                 buyPricePDetails.setText(resultSet.getString("buyPrice"));
                 sellPricePDetails.setText(resultSet.getString("sellPrice"));
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
+        }, null, progressIndicator, null);
     }
-
-
 }
 

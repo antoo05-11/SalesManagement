@@ -10,9 +10,29 @@ import java.sql.*;
  */
 public class SQLConnection {
     private Connection connection;
+    private String url;
+    private String user;
+    private String password;
+    private boolean reconnectingNotification;
+    private boolean reconnecting;
+
+    public boolean isReconnecting() {
+        return reconnectingNotification;
+    }
+
+    public void setReconnecting(boolean reconnectingNotification) {
+        this.reconnectingNotification = reconnectingNotification;
+    }
 
     public Connection getConnection() {
         return connection;
+    }
+
+    SQLConnection(String url, String user, String password) {
+        this.url = url;
+        this.user = user;
+        this.password = password;
+        reconnecting = true;
     }
 
     /**
@@ -21,11 +41,19 @@ public class SQLConnection {
      * @see Connection
      * @since 1.0
      */
-    public void logInSQLServer(String url, String user, String password) {
-        try {
-            connection = DriverManager.getConnection(url, user, password);
-        } catch (SQLException e) {
-            e.printStackTrace();
+    public void connectServer() {
+        if (reconnecting) {
+            reconnecting= false;
+            reconnectingNotification = false;
+            while (connection == null) {
+                try {
+                    connection = DriverManager.getConnection(url, user, password);
+                } catch (SQLException e) {
+                    reconnectingNotification = true;
+                    reconnecting =true;
+                }
+
+            }
         }
     }
 
@@ -50,7 +78,6 @@ public class SQLConnection {
         Statement statement = null;
         try {
             statement = connection.createStatement();
-
             statement.executeUpdate(query);
         } catch (SQLException ex) {
             ex.printStackTrace();

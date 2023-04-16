@@ -1,14 +1,17 @@
 package salesmanagement.salesmanagement.scenecontrollers;
 
+import com.jfoenix.controls.JFXButton;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.ProgressIndicator;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 import salesmanagement.salesmanagement.SQLConnection;
 
-public class SceneController {
+public abstract class SceneController {
     SQLConnection sqlConnection;
     Stage stage;
 
@@ -27,6 +30,18 @@ public class SceneController {
             sqlConnection.addClosingWork();
         System.exit(0);
     }
+
+    @FXML
+    protected void minimizeStage(MouseEvent mouseEvent) {
+        ((Stage) ((JFXButton) mouseEvent.getSource()).getScene().getWindow()).setIconified(true);
+    }
+
+    @FXML
+    protected void maximumStage(MouseEvent mouseEvent) {
+
+    }
+
+    ;
 
     protected Scene scene;
 
@@ -69,7 +84,8 @@ public class SceneController {
      * @since 1.3
      */
     static public void runTask(Runnable taskFunction, Runnable finishFunction, ProgressIndicator progressIndicator, Node bannedArea) {
-        Task<Void> task = new Task<>() {
+        Task<Void> task;
+        task = new Task<>() {
             @Override
             protected Void call() {
                 taskFunction.run();
@@ -91,4 +107,36 @@ public class SceneController {
         new Thread(task).start();
     }
 
+    /**
+     * Runs a task in a separate thread and shows a progress indicator during the task.
+     * Disables a specified pane or node during the task.
+     * Executes a specified finish function upon completion of the task.
+     *
+     * @param taskFunction   the runnable task to execute in the separate thread.
+     * @param finishFunction the optional runnable function to execute upon completion of the task.
+     * @param bannedArea     the pane or node to disable during the task.
+     */
+    public static void runTask(Runnable taskFunction, Runnable finishFunction, Pane bannedArea) {
+        Task<Void> task = new Task<>() {
+            @Override
+            protected Void call() {
+                taskFunction.run();
+                return null;
+            }
+        };
+        ProgressIndicator progressIndicator = new ProgressIndicator();
+        if (bannedArea != null) {
+            bannedArea.getChildren().add(progressIndicator);
+            bannedArea.getChildren().get(0).disableProperty().bind(task.runningProperty());
+        }
+        progressIndicator.visibleProperty().bind(task.runningProperty());
+
+        if (finishFunction != null) {
+            task.setOnSucceeded(workerStateEvent -> {
+                finishFunction.run();
+            });
+        }
+        task.setOnFailed(e -> task.getException().printStackTrace());
+        new Thread(task).start();
+    }
 }

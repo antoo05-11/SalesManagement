@@ -5,53 +5,87 @@
 <?import com.jfoenix.controls.JFXTextField?>
 <?import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView?>
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Pagination?>
 <?import javafx.scene.control.ProgressIndicator?>
-<?import javafx.scene.image.Image?>
-<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-
-<StackPane fx:id="loginRoot" prefHeight="500.0" prefWidth="900.0" stylesheets="@login.css" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="salesmanagement.salesmanagement.scenecontrollers.LoginSceneController">
+<StackPane id="loginRoot" fx:id="loginRoot" onKeyPressed="#checkAccount" prefHeight="475.0" prefWidth="800.0" stylesheets="@login.css" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="salesmanagement.salesmanagement.scenecontrollers.LoginSceneController">
    <children>
-      <ProgressIndicator fx:id="progressIndicator" />
-      <AnchorPane prefHeight="415.0" prefWidth="800.0" StackPane.alignment="CENTER">
+      <VBox prefHeight="434.0" prefWidth="777.0">
          <children>
-            <VBox fx:id="loginPane" alignment="CENTER" fillWidth="false" layoutX="278.0" layoutY="122.0" prefHeight="255.0" prefWidth="344.0" spacing="10.0">
+            <HBox alignment="CENTER_RIGHT" prefHeight="22.0" prefWidth="882.0">
                <children>
-                      <ImageView fitHeight="90.0" fitWidth="90.0" pickOnBounds="true" preserveRatio="true" VBox.vgrow="ALWAYS">
-                          <image>
-                              <Image url="@img/login.png" />
-                          </image>
-                      </ImageView>
-                      <JFXTextField fx:id="username" focusTraversable="false" prefHeight="30.0" prefWidth="200.0" promptText="Username">
-                          <font>
-                              <Font size="14.0" />
-                          </font>
-                      </JFXTextField>
-                      <JFXPasswordField fx:id="password" focusTraversable="false" prefHeight="30.0" prefWidth="200.0" promptText="Password">
-                          <font>
-                              <Font size="14.0" />
-                          </font>
-                      </JFXPasswordField>
-                      <JFXButton buttonType="RAISED" onMouseClicked="#checkAccount" styleClass="topPane" text="LOGIN" textFill="WHITE">
-                          <font>
-                              <Font name="System Bold" size="14.0" />
-                          </font>
-                     <VBox.margin>
-                        <Insets top="20.0" />
-                     </VBox.margin>
-                      </JFXButton>
+                  <JFXButton fx:id="minimizeIcon" alignment="CENTER" contentDisplay="CENTER" focusTraversable="false" minWidth="36.0" onMouseClicked="#minimizeStage" prefHeight="28.0" prefWidth="34.0" style="-fx-background-radius: 10; -fx-border-radius: 10;" textAlignment="CENTER" textFill="TRANSPARENT">
+                     <graphic>
+                        <FontAwesomeIconView boundsType="VISUAL" fill="WHITE" glyphName="WINDOW_MINIMIZE" size="25" textAlignment="CENTER" wrappingWidth="30.0" />
+                     </graphic>
+                  </JFXButton>
+                  <JFXButton fx:id="maximumIcon" alignment="CENTER" contentDisplay="CENTER" disable="true" focusTraversable="false" minWidth="36.0" onMouseClicked="#minimizeStage" prefHeight="28.0" prefWidth="34.0" style="-fx-background-radius: 10; -fx-border-radius: 10;" textAlignment="CENTER" textFill="TRANSPARENT">
+                     <graphic>
+                        <FontAwesomeIconView boundsType="VISUAL" fill="WHITE" glyphName="WINDOW_MAXIMIZE" size="25" textAlignment="CENTER" wrappingWidth="30.0" />
+                     </graphic>
+                  </JFXButton>
+                  <JFXButton fx:id="closeIcon" alignment="CENTER" contentDisplay="CENTER" focusTraversable="false" minWidth="36.0" onMouseClicked="#closeStage" prefHeight="28.0" prefWidth="34.0" style="-fx-background-radius: 10; -fx-border-radius: 10;" textAlignment="CENTER" textFill="TRANSPARENT">
+                     <graphic>
+                        <FontAwesomeIconView boundsType="VISUAL" fill="WHITE" glyphName="CLOSE" size="30" textAlignment="CENTER" wrappingWidth="30.0" />
+                     </graphic>
+                  </JFXButton>
                </children>
-            </VBox>
+               <VBox.margin>
+                  <Insets bottom="3.0" top="3.0" />
+               </VBox.margin>
+            </HBox>
+            <StackPane prefHeight="500.0" prefWidth="900.0">
+               <children>
+                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="492.0" prefWidth="830.0">
+                     <children>
+                        <StackPane layoutX="491.0" layoutY="64.0">
+                           <children>
+                              <VBox fx:id="loginPane" alignment="CENTER" fillWidth="false" prefHeight="255.0" prefWidth="255.0" spacing="15.0">
+                                 <children>
+                                    <FontAwesomeIconView fill="WHITE" glyphName="USER" opacity="0.53" size="70" text="" textAlignment="CENTER">
+                                       <VBox.margin>
+                                          <Insets bottom="20.0" />
+                                       </VBox.margin>
+                                    </FontAwesomeIconView>
+                                        <JFXTextField fx:id="username" focusColor="WHITE" focusTraversable="false" prefHeight="31.0" prefWidth="230.0" promptText="Username" unFocusColor="WHITE">
+                                            <font>
+                                                <Font size="14.0" />
+                                            </font>
+                                        </JFXTextField>
+                                        <JFXPasswordField fx:id="password" focusTraversable="false" prefHeight="30.0" prefWidth="230.0" promptText="Password">
+                                            <font>
+                                                <Font size="14.0" />
+                                            </font>
+                                        </JFXPasswordField>
+                                    <StackPane>
+                                       <VBox.margin>
+                                          <Insets top="20.0" />
+                                       </VBox.margin>
+                                       <children>
+                                          <StackPane opacity="0.4" prefHeight="0.0" prefWidth="200.0" style="-fx-background-color: white; -fx-background-radius: 5;" />
+                                              <JFXButton alignment="CENTER" onMouseClicked="#checkAccount" prefHeight="30.0" prefWidth="230.0" style="-fx-background-radius: 5;" text="LOGIN" textAlignment="CENTER" textFill="WHITE">
+                                                  <font>
+                                                      <Font name="System Bold" size="15.0" />
+                                                  </font>
+                                              </JFXButton>
+                                       </children>
+                                    </StackPane>
+                                 </children>
+                              </VBox>
+                              <ProgressIndicator fx:id="progressIndicator" style="-fx-progress-color: white;" />
+                           </children>
+                        </StackPane>
+                        <Pagination fx:id="pagination" layoutX="83.0" maxPageIndicatorCount="3" pageCount="3" prefHeight="423.0" prefWidth="345.0" />
+                     </children>
+                  </AnchorPane>
+               </children>
+            </StackPane>
          </children>
-      </AnchorPane>
-      <JFXButton fx:id="closeIcon" alignment="CENTER" contentDisplay="CENTER" focusTraversable="false" minWidth="36.0" onMouseClicked="#closeStage" prefHeight="28.0" prefWidth="34.0" style="-fx-background-radius: 10; -fx-border-radius: 10;" textAlignment="CENTER" textFill="TRANSPARENT" StackPane.alignment="TOP_RIGHT">
-         <graphic>
-            <FontAwesomeIconView fill="WHITE" glyphName="CLOSE" size="30" text="" textAlignment="CENTER" wrappingWidth="30.0" />
-         </graphic>
-      </JFXButton>
+      </VBox>
    </children>
 </StackPane>
