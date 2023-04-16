@@ -25,6 +25,7 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.*;
@@ -54,11 +55,15 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+
+import java.util.List;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
 import com.google.i18n.phonenumbers.Phonenumber;
+
 
 public class MainSceneController extends SceneController {
     @FXML
@@ -102,18 +107,16 @@ public class MainSceneController extends SceneController {
 
     @FXML
     void goToOrdersTab() {
-        if (!ordersInit) {
-            initOrders();
-        }
+        initOrders();
+
         tabPane.getSelectionModel().select(ordersTab);
     }
 
 
     @FXML
     void goToProductsOperationTab() {
-        if (!productsInit) {
-            initProducts();
-        }
+        initProducts();
+
         tabPane.getSelectionModel().select(productsOperationTab);
     }
 
@@ -587,7 +590,8 @@ public class MainSceneController extends SceneController {
     JFXComboBox statusInput;
 
     public void initCreateOrder() {
-        customerNumberInput.clear();
+        customerNameInput.clear();
+        phoneNumberInput.clear();
         commentsInput.clear();
         statusInput.getItems().clear();
         statusInput.getItems().add("Cancelled");
@@ -616,8 +620,96 @@ public class MainSceneController extends SceneController {
         productCodeOD.setCellFactory(TextFieldTableCell.forTableColumn());
         quantityOD.setCellFactory(TextFieldTableCell.forTableColumn((new IntegerStringConverter())));
         priceEachOD.setCellFactory(TextFieldTableCell.forTableColumn((new DoubleStringConverter())));
+
+        // Add a listener to the text property of the text field
+        productCodeInput.textProperty().addListener((observable, oldValue, newValue) -> {
+            // Update the suggestion list based on the current input
+            if (newValue.equals("")) {
+                suggestionList.setVisible(false);
+            } else {
+                if (newValue.length() > 2) {
+                    List<String> suggestions = new ArrayList<>(); // Replace with your own function to retrieve suggestions
+
+                    String sql = "SELECT productCode FROM products WHERE upper(productCode) LIKE upper('" + newValue + "%');";
+                    try (ResultSet rs = sqlConnection.getDataQuery(sql)) {
+                        // Add each suggestion to the list
+                        while (rs.next()) {
+                            suggestions.add(rs.getString("productCode"));
+                        }
+                    } catch (SQLException ex) {
+                        ex.printStackTrace();
+                    }
+
+                    if (suggestions.isEmpty()) {
+                        suggestionList.setVisible(false);
+                    } else {
+                        suggestionList.getItems().setAll(suggestions);
+                        suggestionList.getSelectionModel().selectFirst();
+                        suggestionList.setVisible(true);
+                    }
+                }
+            }
+        });
+
+
+        // Add an event handler to the suggestion list
+        suggestionList.setOnMouseClicked(event -> {
+            String selectedValue = suggestionList.getSelectionModel().getSelectedItem();
+            if (selectedValue != null) {
+                productCodeInput.setText(selectedValue);
+                suggestionList.setVisible(false);
+            }
+        });
+
+        productCodeInput.setOnKeyPressed(event -> {
+            if (event.getCode() == KeyCode.ENTER) {
+                String selectedValue = suggestionList.getSelectionModel().getSelectedItem();
+                if (selectedValue != null) {
+                    productCodeInput.setText(selectedValue);
+                    suggestionList.setVisible(false);
+                    productCodeInput.requestFocus();
+                }
+            } else if (event.getCode() == KeyCode.TAB || event.getCode() == KeyCode.DOWN) {
+                suggestionList.getSelectionModel().selectNext();
+                event.consume();
+                productCodeInput.requestFocus();
+            } else if (event.getCode() == KeyCode.UP) {
+                suggestionList.getSelectionModel().selectPrevious();
+                event.consume();
+                productCodeInput.requestFocus();
+            }
+        });
     }
 
+//    @FXML
+//    public void search() {
+//        String newValue = productCodeInput.getText();
+//        if (newValue.equals("")) {
+//            suggestionList.setVisible(false);
+//        } else {
+//            if (newValue.length() > 2) {
+//                List<String> suggestions = new ArrayList<>(); // Replace with your own function to retrieve suggestions
+//
+//                String sql = "SELECT productCode FROM products WHERE upper(productCode) LIKE upper('" + newValue + "%');";
+//                try (ResultSet rs = sqlConnection.getDataQuery(sql)) {
+//                    // Add each suggestion to the list
+//                    while (rs.next()) {
+//                        suggestions.add(rs.getString("productCode"));
+//                    }
+//                } catch (SQLException ex) {
+//                    ex.printStackTrace();
+//                }
+//
+//                if (suggestions.isEmpty() || suggestions.get(0).equals(newValue)) {
+//                    suggestionList.setVisible(false);
+//                } else {
+//                    suggestionList.getItems().setAll(suggestions);
+//                    suggestionList.getSelectionModel().selectFirst();
+//                    suggestionList.setVisible(true);
+//                }
+//            }
+//        }
+//    }
     public ObservableList<Order> getList() {
         ObservableList<Order> items = FXCollections.observableArrayList();
         return items;
@@ -686,9 +778,13 @@ public class MainSceneController extends SceneController {
     @FXML
     TableColumn<Order, Double> totalOD;
     @FXML
-    JFXTextField customerNumberInput;
+    JFXTextField customerNameInput;
+    @FXML
+    JFXTextField phoneNumberInput;
     @FXML
     JFXTextField productCodeInput;
+    @FXML
+    ListView<String> suggestionList;
     @FXML
     JFXTextField quantityInput;
     @FXML
@@ -931,11 +1027,7 @@ public class MainSceneController extends SceneController {
         if (selectedRow != null) {
             int orderNumber = (Integer) selectedRow.get(0);
 
-            String deleteQuery = "DELETE FROM orderdetails WHERE orderNumber = " + orderNumber;
-            // Delete the order from the database
-            sqlConnection.updateQuery(deleteQuery);
-
-            deleteQuery = "DELETE FROM orders WHERE orderNumber = " + orderNumber;
+            String deleteQuery = "DELETE FROM orders WHERE orderNumber = " + orderNumber;
             // Delete the order from the database
             sqlConnection.updateQuery(deleteQuery);
 
@@ -953,18 +1045,6 @@ public class MainSceneController extends SceneController {
     TableColumn<ObservableList<Object>, String> productNameProd;
     @FXML
     TableColumn<ObservableList<Object>, String> productLineProd;
-    //    @FXML
-//    TableColumn<ObservableList<Object>, String> productScaleProd;
-//    @FXML
-//    TableColumn<ObservableList<Object>, String> productVendorProd;
-//    @FXML
-//    TableColumn<ObservableList<Object>, String> productDescriptionProd;
-//    @FXML
-//    TableColumn<ObservableList<Object>, Integer> inStockProd;
-//    @FXML
-//    TableColumn<ObservableList<Object>, Float> buyPriceProd;
-//    @FXML
-//    TableColumn<ObservableList<Object>, Float> MSRPProd;
     @FXML
     Pane bgPane;
     @FXML
@@ -1043,36 +1123,32 @@ public class MainSceneController extends SceneController {
     @FXML
     JFXTextField buyPricePDetails;
     @FXML
-    JFXTextField MSRPPDetails;
+    JFXTextField sellPricePDetails;
     @FXML
     JFXTextField productDescriptionPDetails;
 
     void initProductDetails(ObservableList<Object> selected) {
-        runTask(() -> {
-            try {
-                productLinePDetails.getItems().clear();
-                String query = "SELECT productLine FROM productlines";
-                ResultSet resultSet = sqlConnection.getDataQuery(query);
+        try {
+            productLinePDetails.getItems().clear();
+            String query = "SELECT productLine FROM productlines";
+            ResultSet resultSet = sqlConnection.getDataQuery(query);
 
-                while (resultSet.next()) {
-                    String productLine = resultSet.getString("productLine");
-                    productLinePDetails.getItems().add(productLine);
-                }
-                query = "SELECT productCode, productName, productLine, productScale, productVendor, productDescription, quantityInStock, buyPrice, MSRP FROM products WHERE productCode = '" + selected.get(0).toString() + "'";
-                resultSet = sqlConnection.getDataQuery(query);
-                if (resultSet.next()) {
-                    productCodePDetails.setText(resultSet.getString("productCode"));
-                    productNamePDetails.setText(resultSet.getString("productName"));
-                    productLinePDetails.setValue(resultSet.getString("productLine"));
-                    productScalePDetails.setText(resultSet.getString("productScale"));
-                    productVendorPDetails.setText(resultSet.getString("productVendor"));
-                    productDescriptionPDetails.setText(resultSet.getString("productDescription"));
-                    inStockPDetails.setText(resultSet.getString("quantityInStock"));
-                    buyPricePDetails.setText(resultSet.getString("buyPrice"));
-                    MSRPPDetails.setText(resultSet.getString("MSRP"));
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
+            while (resultSet.next()) {
+                String productLine = resultSet.getString("productLine");
+                productLinePDetails.getItems().add(productLine);
+            }
+            query = "SELECT productCode, productName, productLine, productScale, productVendor, productDescription, quantityInStock, buyPrice, sellPrice FROM products WHERE productCode = '" + selected.get(0).toString() + "'";
+            resultSet = sqlConnection.getDataQuery(query);
+            if (resultSet.next()) {
+                productCodePDetails.setText(resultSet.getString("productCode"));
+                productNamePDetails.setText(resultSet.getString("productName"));
+                productLinePDetails.setValue(resultSet.getString("productLine"));
+                productScalePDetails.setText(resultSet.getString("productScale"));
+                productVendorPDetails.setText(resultSet.getString("productVendor"));
+                productDescriptionPDetails.setText(resultSet.getString("productDescription"));
+                inStockPDetails.setText(resultSet.getString("quantityInStock"));
+                buyPricePDetails.setText(resultSet.getString("buyPrice"));
+                sellPricePDetails.setText(resultSet.getString("sellPrice"));
             }
         }, null, progressIndicator, null);
     }
