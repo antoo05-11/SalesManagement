@@ -8,10 +8,12 @@
 <p> Bùi Thị Ngọc - UET - VNU</p>
 
 <h2>Demo application</h2>
+
 See [here](https://youtu.be/b9M9_ylbYfE).
-![image](https://github.com/antoo05-11/SalesManagement/assets/92411733/29423987-fe8b-4b64-9d73-8a303a04c8f5)
+![image](https://github.com/antoo05-11/SalesManagement/assets/92411733/d8bad7f2-c450-4592-9790-1f3780dd981b)
 ![image](https://github.com/antoo05-11/SalesManagement/assets/92411733/7a8d4c14-a034-48ff-9a72-c374fb069c68)
 ![image](https://github.com/antoo05-11/SalesManagement/assets/92411733/c6530029-08fa-4c15-9745-651e30b519e5)
+![image](https://github.com/antoo05-11/SalesManagement/assets/92411733/3c153c98-30cb-4a65-aeee-2d700446078a)
 
 <h2>Installation Guide</h2>
 
