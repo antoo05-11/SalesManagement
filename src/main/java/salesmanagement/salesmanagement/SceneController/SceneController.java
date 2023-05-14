@@ -8,7 +8,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
-import salesmanagement.salesmanagement.Utils.SQLConnection;
+import salesmanagement.salesmanagement.DataAccess.SQLConnection;
 
 public abstract class SceneController {
     protected static SQLConnection sqlConnection;

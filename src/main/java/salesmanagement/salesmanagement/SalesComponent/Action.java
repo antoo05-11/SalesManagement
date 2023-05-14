@@ -1,12 +1,10 @@
 package salesmanagement.salesmanagement.SalesComponent;
 
 import javafx.scene.control.Label;
-import salesmanagement.salesmanagement.Utils.SQLConnection;
+import salesmanagement.salesmanagement.DataAccess.SQLConnection;
 
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 

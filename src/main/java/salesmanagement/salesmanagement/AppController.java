@@ -12,10 +12,9 @@ import org.burningwave.core.assembler.StaticComponentContainer;
 import salesmanagement.salesmanagement.SceneController.LoginSceneController;
 import salesmanagement.salesmanagement.SceneController.MainSceneController;
 import salesmanagement.salesmanagement.Utils.ImageController;
-import salesmanagement.salesmanagement.Utils.SQLConnection;
+import salesmanagement.salesmanagement.DataAccess.SQLConnection;
 
 import java.io.IOException;
-import java.util.Objects;
 
 import static salesmanagement.salesmanagement.SceneController.SceneController.runTask;
 

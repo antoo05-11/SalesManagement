@@ -1,10 +1,8 @@
-package salesmanagement.salesmanagement.Utils;
+package salesmanagement.salesmanagement.DataAccess;
 
-import org.apache.commons.net.ntp.TimeStamp;
 import salesmanagement.salesmanagement.SalesComponent.Action;
 
 import java.sql.*;
-import java.time.LocalDateTime;
 
 /**
  * SQLConnection helps you connect to SQL server and database table.

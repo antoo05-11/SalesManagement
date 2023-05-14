@@ -1,7 +1,7 @@
 package salesmanagement.salesmanagement.SalesComponent;
 
 import javafx.scene.control.Label;
-import salesmanagement.salesmanagement.Utils.SQLConnection;
+import salesmanagement.salesmanagement.DataAccess.SQLConnection;
 import salesmanagement.salesmanagement.ViewController.UserRight;
 
 import java.sql.ResultSet;

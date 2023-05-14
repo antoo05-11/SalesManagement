@@ -9,7 +9,7 @@ import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
-import salesmanagement.salesmanagement.Utils.SQLConnection;
+import salesmanagement.salesmanagement.DataAccess.SQLConnection;
 import salesmanagement.salesmanagement.Utils.Utils;
 
 import java.net.URL;
