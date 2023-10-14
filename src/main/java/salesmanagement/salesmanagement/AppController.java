@@ -48,7 +48,6 @@ public class AppController {
         try {
             this.loginScene = new Scene(loginFXMLLoader.load());
         } catch (IOException e) {
-            e.printStackTrace();
             System.exit(0);
         }
         loginSceneController = loginFXMLLoader.getController();
@@ -57,7 +56,6 @@ public class AppController {
         try {
             this.mainScene = new Scene(mainFXMLLoader.load());
         } catch (IOException e) {
-            e.printStackTrace();
             System.exit(0);
         }
 
@@ -80,10 +78,6 @@ public class AppController {
             stage.setX(event.getScreenX() + xOffset);
             stage.setY(event.getScreenY() + yOffset);
         });
-
-//        var password = "";
-//        var user = "root";
-//        var url = "jdbc:mysql://localhost:3306/b7kidpocyxjnjhwdw73i";
 
         var password = "M3hB6j3RXWrqpQssMdSq";
         var user = "ur3nnlrz6fwe487r";
@@ -125,18 +119,6 @@ public class AppController {
             }
         };
         logOutListener.start();
-
-
-//        AnimationTimer notifyInternetConnection = new AnimationTimer() {
-//            @Override
-//            public void handle(long l) {
-//                if(sqlConnection.isReconnecting()){
-//                    sqlConnection.setReconnecting(false);
-//                    Platform.runLater(() -> NotificationSystem.throwNotification(NotificationCode.NETWORK_ERROR, stage));
-//                }
-//            }
-//        };
-//        notifyInternetConnection.start();
     }
 
     double xOffset;

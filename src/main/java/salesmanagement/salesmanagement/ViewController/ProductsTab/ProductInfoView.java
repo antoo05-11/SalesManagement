@@ -1,6 +1,5 @@
 package salesmanagement.salesmanagement.ViewController.ProductsTab;
 
-import impl.org.controlsfx.skin.AutoCompletePopup;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
